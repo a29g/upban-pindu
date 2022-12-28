@@ -1,34 +1,70 @@
-import { initializeApp } from 'firebase/app'
+import { initializeApp } from "firebase/app";
 
-import {getAuth, signInWithRedirect, signInWithPopup,GoogleAuthProvider, createUserWithEmailAndPassword , signInWithEmailAndPassword, signOut, onAuthStateChanged}  from 'firebase/auth'
+import {
+  getAuth,
+  signInWithRedirect,
+  signInWithPopup,
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+} from "firebase/auth";
 
-import { getFirestore,doc,getDoc,setDoc } from 'firebase/firestore'
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  writeBatch,
+  query,
+  getDocs,
+} from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDnarlSPl5pUUGEJSxt2vMeujYwhSaixfQ",
-    authDomain: "urpan-pindu-db.firebaseapp.com",
-    projectId: "urpan-pindu-db",
-    storageBucket: "urpan-pindu-db.appspot.com",
-    messagingSenderId: "167956242550",
-    appId: "1:167956242550:web:d1af10870160e62c37ff57"
-  };
-  
-  // Initialize Firebase
-  const firebaseApp = initializeApp(firebaseConfig);
+  apiKey: "AIzaSyDnarlSPl5pUUGEJSxt2vMeujYwhSaixfQ",
+  authDomain: "urpan-pindu-db.firebaseapp.com",
+  projectId: "urpan-pindu-db",
+  storageBucket: "urpan-pindu-db.appspot.com",
+  messagingSenderId: "167956242550",
+  appId: "1:167956242550:web:d1af10870160e62c37ff57",
+};
+
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig);
 
 const googleProvider = new GoogleAuthProvider();
 
 googleProvider.setCustomParameters({
-  prompt: 'select_account',
+  prompt: "select_account",
 });
 
 export const auth = getAuth();
+
 export const signInWithGooglePopup = () =>
   signInWithPopup(auth, googleProvider);
+
 export const signInWithGoogleRedirect = () =>
   signInWithRedirect(auth, googleProvider);
 
 export const db = getFirestore();
+
+export const addCollectionAndDocuments = async (
+  collectionKey,
+  objectsToAdd
+) => {
+  const batch = writeBatch(db);
+  const collectionRef = collection(db, collectionKey);
+
+  objectsToAdd.forEach((object) => {
+    const docRef = doc(collectionRef, object.title.toLowerCase());
+    batch.set(docRef, object);
+  });
+
+  await batch.commit();
+  console.log("done");
+};
 
 export const createUserDocFromAuth = async (
   userAuth,
@@ -36,7 +72,7 @@ export const createUserDocFromAuth = async (
 ) => {
   if (!userAuth) return;
 
-  const userDocRef = doc(db, 'users', userAuth.uid);
+  const userDocRef = doc(db, "users", userAuth.uid);
 
   const userSnapshot = await getDoc(userDocRef);
 
@@ -52,7 +88,7 @@ export const createUserDocFromAuth = async (
         ...additionalInformation,
       });
     } catch (error) {
-      console.log('error creating the user', error.message);
+      console.log("error creating the user", error.message);
     }
   }
 
@@ -73,5 +109,19 @@ export const signInAuthUserWithEmailAndPassword = async (email, password) => {
 
 export const signOutUser = async () => await signOut(auth);
 
-export const onAuthStateChangedListener = (callback) => onAuthStateChanged(auth, callback)
+export const onAuthStateChangedListener = (callback) =>
+  onAuthStateChanged(auth, callback);
 
+export const getCategoriesAndDocuments = async () => {
+  const collectionRef = collection(db, "categories");
+  const q = query(collectionRef);
+
+  const querySnapshot = await getDocs(q);
+  const categoryMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
+    const { title, items } = docSnapshot.data();
+    acc[title.toLowerCase()] = items;
+    return acc;
+  }, {});
+
+  return categoryMap;
+};

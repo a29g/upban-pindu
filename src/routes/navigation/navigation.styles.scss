@@ -5,10 +5,17 @@
   justify-content: space-between;
   margin-bottom: 25px;
 
-  .logo-container {
+  .nav-logo-container {
     height: 100%;
     width: 70px;
     padding: 25px;
+  }
+
+  .logo-name{
+    font-size: 30px;
+    padding: 23px 10px;
+    position: absolute;
+    font-weight: bold;
   }
 
   .nav-links-container {

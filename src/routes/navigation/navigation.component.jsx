@@ -17,8 +17,9 @@ const Navigation = () => {
   return (
     <Fragment>
       <div className="navigation">
-        <Link className="nav-logo-container" to="/">
+        <Link className="logo-container" to="/">
           <Pindlogo className="logo" />
+          <span className="logo-name">Urban Pindu</span>
         </Link>
 
         <div className="nav-links-container">
